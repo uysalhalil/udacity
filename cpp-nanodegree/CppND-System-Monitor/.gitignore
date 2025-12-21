@@ -1,0 +1,12 @@
+monitor
+a.out
+settings.json
+*.o
+build/*
+*.json
+.github/**
+test_format
+test
+linux_parser_test
+mem_test
+tests
