@@ -124,12 +124,9 @@ void ChatBot::ReceiveMessageFromUser(std::string message) {
   if (levDists.size() > 0) {
     // sort in ascending order of Levenshtein distance (best fit is at the top)
     std::sort(levDists.begin(), levDists.end(),
-              [](const EdgeDist& a, const EdgeDist& b) {
-                return a.second < b.second;
-              });
-    newNode =
-        levDists.at(0).first->GetChildNode();  // after sorting the best edge is
-                                               // at first position
+              [](const EdgeDist& a, const EdgeDist& b) { return a.second < b.second; });
+    newNode = levDists.at(0).first->GetChildNode();  // after sorting the best edge is
+                                                     // at first position
   } else {
     // go back to root node
     newNode = _rootNode;
@@ -170,14 +167,12 @@ int ChatBot::ComputeLevenshteinDistance(std::string s1, std::string s2) {
   for (size_t k = 0; k <= n; k++) costs[k] = k;
 
   size_t i = 0;
-  for (std::string::const_iterator it1 = s1.begin(); it1 != s1.end();
-       ++it1, ++i) {
+  for (std::string::const_iterator it1 = s1.begin(); it1 != s1.end(); ++it1, ++i) {
     costs[0] = i + 1;
     size_t corner = i;
 
     size_t j = 0;
-    for (std::string::const_iterator it2 = s2.begin(); it2 != s2.end();
-         ++it2, ++j) {
+    for (std::string::const_iterator it2 = s2.begin(); it2 != s2.end(); ++it2, ++j) {
       size_t upper = costs[j + 1];
       if (*it1 == *it2) {
         costs[j + 1] = corner;
