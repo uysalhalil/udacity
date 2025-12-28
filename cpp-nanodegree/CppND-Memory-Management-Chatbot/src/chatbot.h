@@ -6,6 +6,9 @@
 #include <memory>
 #include <string>
 
+using std::string;
+using std::unique_ptr;
+
 class GraphNode;  // forward declaration
 class ChatLogic;  // forward declaration
 
@@ -13,7 +16,7 @@ class ChatBot {
  private:
   // data handles (owned)
   // wxBitmap* _image;  // avatar image original code using raw pointer
-  std::unique_ptr<wxBitmap> _image;  // avatar image using smart pointer
+  unique_ptr<wxBitmap> _image;  // avatar image using smart pointer
 
   // data handles (not owned)
   GraphNode* _currentNode;
@@ -21,16 +24,21 @@ class ChatBot {
   ChatLogic* _chatLogic;
 
   // proprietary functions
-  int ComputeLevenshteinDistance(std::string s1, std::string s2);
+  int ComputeLevenshteinDistance(string s1, string s2);
 
  public:
   // constructors / destructors
-  ChatBot();                      // constructor WITHOUT memory allocation
-  ChatBot(std::string filename);  // constructor WITH memory allocation
+  ChatBot();                 // constructor WITHOUT memory allocation
+  ChatBot(string filename);  // constructor WITH memory allocation
   ~ChatBot();
 
   //// STUDENT CODE
   ////
+
+  ChatBot(const ChatBot& other);             // copy constructor
+  ChatBot& operator=(const ChatBot& other);  // copy assignment operator
+  ChatBot(ChatBot&& other);                  // move constructor
+  ChatBot& operator=(ChatBot&& other);       // move assignment operator
 
   ////
   //// EOF STUDENT CODE
