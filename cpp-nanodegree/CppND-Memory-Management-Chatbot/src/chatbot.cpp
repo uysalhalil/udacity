@@ -9,9 +9,6 @@
 #include "graphedge.h"
 #include "graphnode.h"
 
-using std::make_unique;
-using std::move;
-
 // constructor WITHOUT memory allocation
 ChatBot::ChatBot() {
   // invalidate data handles
@@ -29,79 +26,62 @@ ChatBot::ChatBot(std::string filename) {
   _rootNode = nullptr;
 
   // load image into heap memory
-  _image = make_unique<wxBitmap>(filename, wxBITMAP_TYPE_PNG);
+  _image = new wxBitmap(filename, wxBITMAP_TYPE_PNG);
 }
 
 ChatBot::~ChatBot() {
   std::cout << "ChatBot Destructor" << std::endl;
 
   // deallocate heap memory
-  //   if (_image != NULL)  // Attention: wxWidgets used NULL and not nullptr
-  //   {
-  //     delete _image;
-  //     _image = NULL;
-  //   }
+  if (_image != NULL)  // Attention: wxWidgets used NULL and not nullptr
+  {
+    delete _image;
+    _image = NULL;
+  }
 }
 
 //// STUDENT CODE
 ////
-ChatBot::ChatBot(const ChatBot& other) {
+// copy constructor
+ChatBot::ChatBot(const ChatBot& source) {
   std::cout << "ChatBot Copy Constructor" << std::endl;
-
-  // copy data handles
-  _image = make_unique<wxBitmap>(*(other._image));
-  _currentNode = other._currentNode;
-  _rootNode = other._rootNode;
-  _chatLogic = other._chatLogic;
+  // copy data members from source class
+  // deep copy for owned resource
+  if (source._image != nullptr) {
+    _image = new wxBitmap(*source._image);
+  } else {
+    _image = nullptr;
+  }
+  // shallow copy because we don't own these resources
+  _currentNode = source._currentNode;
+  _rootNode = source._rootNode;
+  _chatLogic = source._chatLogic;
 }
 
-ChatBot& ChatBot::operator=(const ChatBot& other) {
+// copy assignment operator
+ChatBot& ChatBot::operator=(const ChatBot& source) {
   std::cout << "ChatBot Copy Assignment Operator" << std::endl;
-
-  if (this != &other) {
-    // copy data handles
-    _image = make_unique<wxBitmap>(*(other._image));
-    _currentNode = other._currentNode;
-    _rootNode = other._rootNode;
-    _chatLogic = other._chatLogic;
+  if (this == &source) {
+    return *this;
   }
-
+  // deallocate existing resource
+  if (_image != nullptr) {
+    delete _image;
+  }
+  // copy data members from source class
+  // deep copy for owned resource
+  if (source._image != nullptr) {
+    _image = new wxBitmap(*source._image);
+  } else {
+    _image = nullptr;
+  }
+  // shallow copy assignment because, we don't own these resources
+  _currentNode = source._currentNode;
+  _rootNode = source._rootNode;
+  _chatLogic = source._chatLogic;
   return *this;
 }
 
-<<<<<<< HEAD
-ChatBot::ChatBot(ChatBot&& other) {
-  std::cout << "ChatBot Move Constructor" << std::endl;
-
-  // transfer ownership of data handles
-  _image = move(other._image);
-  _currentNode = other._currentNode;
-  _rootNode = other._rootNode;
-  _chatLogic = other._chatLogic;
-
-  // invalidate other object's data handles
-  other._currentNode = nullptr;
-  other._rootNode = nullptr;
-  other._chatLogic = nullptr;
-}
-
-ChatBot& ChatBot::operator=(ChatBot&& other) {
-  std::cout << "ChatBot Move Assignment Operator" << std::endl;
-
-  if (this != &other) {
-    // transfer ownership of data handles
-    _image = move(other._image);
-    _currentNode = other._currentNode;
-    _rootNode = other._rootNode;
-    _chatLogic = other._chatLogic;
-
-    // invalidate other object's data handles
-    other._currentNode = nullptr;
-    other._rootNode = nullptr;
-    zz other._chatLogic = nullptr;
-  }
-
-=======
 // move constructor
 ChatBot::ChatBot(ChatBot&& source) noexcept {
   std::cout << "ChatBot Move Constructor" << std::endl;
@@ -135,7 +115,6 @@ ChatBot& ChatBot::operator=(ChatBot&& source) noexcept {
     source._rootNode = nullptr;
     source._chatLogic = nullptr;
   }
->>>>>>> 74eab3f (task 5 moving chatbot)
   return *this;
 }
 

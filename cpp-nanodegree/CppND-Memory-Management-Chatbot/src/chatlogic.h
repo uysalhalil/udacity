@@ -7,11 +7,6 @@
 
 #include "chatgui.h"
 
-using std::pair;
-using std::string;
-using std::unique_ptr;
-using std::vector;
-
 // forward declarations
 class ChatBot;
 class GraphEdge;
@@ -32,16 +27,17 @@ class ChatLogic {
   //// EOF STUDENT CODE
 
   // data handles (not owned)
-  unique_ptr<ChatBot> _chatBot;
-  unique_ptr<GraphNode> _currentNode;
+  GraphNode* _currentNode;
+  ChatBot* _chatBot;
   ChatBotPanelDialog* _panelDialog;
 
   // proprietary type definitions
-  typedef vector<pair<string, string>> tokenlist;
+  typedef std::vector<std::pair<std::string, std::string>> tokenlist;
 
   // proprietary functions
   template <typename T>
-  void AddAllTokensToElement(string tokenID, tokenlist& tokens, T& element);
+  void AddAllTokensToElement(std::string tokenID, tokenlist& tokens,
+                             T& element);
 
  public:
   // constructor / destructor
@@ -53,9 +49,9 @@ class ChatLogic {
   void SetChatbotHandle(ChatBot* chatbot);
 
   // proprietary functions
-  void LoadAnswerGraphFromFile(string filename);
-  void SendMessageToChatbot(string message);
-  void SendMessageToUser(string message);
+  void LoadAnswerGraphFromFile(std::string filename);
+  void SendMessageToChatbot(std::string message);
+  void SendMessageToUser(std::string message);
   wxBitmap* GetImageFromChatbot();
 };
 
