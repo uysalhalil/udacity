@@ -24,13 +24,14 @@ using std::vector;
 ChatLogic::ChatLogic() {
   //// STUDENT CODE
   ////
+  std::cout << "ChatLogic Constructor" << std::endl;
 
   // create instance of chatbot
-  _chatBot = make_unique<ChatBot>("../images/chatbot.png");
+  //   _chatBot = new ChatBot("../images/chatbot.png");
 
   // add pointer to chatlogic so that chatbot answers can be passed on to the
   // GUI
-  _chatBot->SetChatLogicHandle(this);
+  //   _chatBot->SetChatLogicHandle(this);
 
   ////
   //// EOF STUDENT CODE
@@ -39,9 +40,10 @@ ChatLogic::ChatLogic() {
 ChatLogic::~ChatLogic() {
   //// STUDENT CODE
   ////
+  std::cout << "ChatLogic Destructor" << std::endl;
 
   // delete chatbot instance
-  // no need to delete _chatBot since it is managed by unique_ptr
+  // delete _chatBot;
 
   // delete all nodes
   //   for (auto it = std::begin(_nodes); it != std::end(_nodes); ++it) {
@@ -58,12 +60,16 @@ ChatLogic::~ChatLogic() {
 }
 
 template <typename T>
-void ChatLogic::AddAllTokensToElement(string tokenID, tokenlist& tokens, T& element) {
+void ChatLogic::AddAllTokensToElement(string tokenID, tokenlist& tokens,
+                                      T& element) {
   // find all occurences for current node
   auto token = tokens.begin();
   while (true) {
-    token =
-        find_if(token, tokens.end(), [&tokenID](const pair<string, string>& pair) { return pair.first == tokenID; });
+    token = std::find_if(
+        token, tokens.end(),
+        [&tokenID](const std::pair<std::string, std::string>& pair) {
+          return pair.first == tokenID;
+        });
     if (token != tokens.end()) {
       element.AddToken(token->second);  // add new keyword to edge
       token++;                          // increment iterator to next element
@@ -88,14 +94,18 @@ void ChatLogic::LoadAnswerGraphFromFile(string filename) {
         // extract next token
         auto posTokenFront = lineStr.find("<");
         auto posTokenBack = lineStr.find(">");
-        if (posTokenFront < 0 || posTokenBack < 0) break;  // quit loop if no complete token has been found
-        string tokenStr = lineStr.substr(posTokenFront + 1, posTokenBack - posTokenFront - 1);
+        if (posTokenFront == std::string::npos ||
+            posTokenBack == std::string::npos)
+          break;  // quit loop if no complete token has been found
+        std::string tokenStr =
+            lineStr.substr(posTokenFront + 1, posTokenBack - posTokenFront - 1);
 
         // extract token type and info
         auto posTokenInfo = tokenStr.find(":");
-        if (posTokenInfo != string::npos) {
-          string tokenType = tokenStr.substr(0, posTokenInfo);
-          string tokenInfo = tokenStr.substr(posTokenInfo + 1);
+        if (posTokenInfo != std::string::npos) {
+          std::string tokenType = tokenStr.substr(0, posTokenInfo);
+          std::string tokenInfo =
+              tokenStr.substr(posTokenInfo + 1, tokenStr.size() - 1);
 
           // add token to vector
           tokens.push_back(make_pair(tokenType, tokenInfo));
@@ -106,12 +116,16 @@ void ChatLogic::LoadAnswerGraphFromFile(string filename) {
       }
 
       // process tokens for current line
-      auto type =
-          find_if(tokens.begin(), tokens.end(), [](const pair<string, string>& pair) { return pair.first == "TYPE"; });
+      auto type = find_if(tokens.begin(), tokens.end(),
+                          [](const pair<string, string>& pair) {
+                            return pair.first == "TYPE";
+                          });
       if (type != tokens.end()) {
         // check for id
-        auto idToken =
-            find_if(tokens.begin(), tokens.end(), [](const pair<string, string>& pair) { return pair.first == "ID"; });
+        auto idToken = find_if(tokens.begin(), tokens.end(),
+                               [](const pair<string, string>& pair) {
+                                 return pair.first == "ID";
+                               });
         if (idToken != tokens.end()) {
           // extract id from token
           int id = stoi(idToken->second);
@@ -123,7 +137,9 @@ void ChatLogic::LoadAnswerGraphFromFile(string filename) {
 
             // check if node with this ID exists already
             auto newNode = find_if(_nodes.begin(), _nodes.end(),
-                                   [&id](unique_ptr<GraphNode>& node) { return node->GetID() == id; });
+                                   [&id](unique_ptr<GraphNode>& node) {
+                                     return node->GetID() == id;
+                                   });
 
             // create new element if ID does not yet exist
             if (newNode == _nodes.end()) {
@@ -145,31 +161,39 @@ void ChatLogic::LoadAnswerGraphFromFile(string filename) {
 
             // find tokens for incoming (parent) and outgoing (child) node
             auto parentToken = find_if(tokens.begin(), tokens.end(),
-                                       [](const pair<string, string>& pair) { return pair.first == "PARENT"; });
+                                       [](const pair<string, string>& pair) {
+                                         return pair.first == "PARENT";
+                                       });
             auto childToken = find_if(tokens.begin(), tokens.end(),
-                                      [](const pair<string, string>& pair) { return pair.first == "CHILD"; });
+                                      [](const pair<string, string>& pair) {
+                                        return pair.first == "CHILD";
+                                      });
 
             if (parentToken != tokens.end() && childToken != tokens.end()) {
               // get iterator on incoming and outgoing node via ID search
-              auto parentNode = find_if(_nodes.begin(), _nodes.end(), [&parentToken](unique_ptr<GraphNode>& node) {
-                return node->GetID() == stoi(parentToken->second);
-              });
-              auto childNode = find_if(_nodes.begin(), _nodes.end(), [&childToken](unique_ptr<GraphNode>& node) {
-                return node->GetID() == stoi(childToken->second);
-              });
+              auto parentNode =
+                  find_if(_nodes.begin(), _nodes.end(),
+                          [&parentToken](unique_ptr<GraphNode>& node) {
+                            return node->GetID() == stoi(parentToken->second);
+                          });
+              auto childNode =
+                  find_if(_nodes.begin(), _nodes.end(),
+                          [&childToken](unique_ptr<GraphNode>& node) {
+                            return node->GetID() == stoi(childToken->second);
+                          });
 
               // create new edge
-              unique_ptr<GraphEdge> edge = make_unique<GraphEdge>(id);
+              auto edge = std::make_unique<GraphEdge>(id);
               edge->SetChildNode(childNode->get());
               edge->SetParentNode(parentNode->get());
-              _edges.push_back(std::move(edge));
+              //   _edges.push_back(std::unique_ptr<GraphEdge>(edge));
 
               // find all keywords for current node
               AddAllTokensToElement("KEYWORD", tokens, *edge);
 
               // store reference in child node and parent node
-              (*childNode)->AddEdgeToParentNode(move(edge));
-              (*parentNode)->AddEdgeToChildNode(move(edge));
+              (*childNode)->AddEdgeToParentNode(edge.get());
+              (*parentNode)->AddEdgeToChildNode(std::move(edge));
             }
 
             ////
@@ -206,19 +230,31 @@ void ChatLogic::LoadAnswerGraphFromFile(string filename) {
   }
 
   // add chatbot to graph root node
-  _chatBot->SetRootNode(rootNode);
-  rootNode->MoveChatbotHere(move(_chatBot));
-
+  ChatBot chatBot("../images/chatbot.png");
+  chatBot.SetChatLogicHandle(this);
+  chatBot.SetRootNode(rootNode);
+  rootNode->MoveChatbotHere(std::move(chatBot));
+  _chatBot = rootNode->GetChatbotHandle();
   ////
   //// EOF STUDENT CODE
 }
 
-void ChatLogic::SetPanelDialogHandle(ChatBotPanelDialog* panelDialog) { _panelDialog = panelDialog; }
+void ChatLogic::SetPanelDialogHandle(ChatBotPanelDialog* panelDialog) {
+  _panelDialog = panelDialog;
+}
 
-void ChatLogic::SetChatbotHandle(ChatBot* chatbot) { _chatBot = make_unique<ChatBot>(*chatbot); }
+void ChatLogic::SetChatbotHandle(ChatBot* chatbot) {
+  _chatBot = make_unique<ChatBot>(*chatbot);
+}
 
-void ChatLogic::SendMessageToChatbot(std::string message) { _chatBot->ReceiveMessageFromUser(message); }
+void ChatLogic::SendMessageToChatbot(std::string message) {
+  _chatBot->ReceiveMessageFromUser(message);
+}
 
-void ChatLogic::SendMessageToUser(std::string message) { _panelDialog->PrintChatbotResponse(message); }
+void ChatLogic::SendMessageToUser(std::string message) {
+  _panelDialog->PrintChatbotResponse(message);
+}
 
-wxBitmap* ChatLogic::GetImageFromChatbot() { return _chatBot->GetImageHandle().get(); }
+wxBitmap* ChatLogic::GetImageFromChatbot() {
+  return _chatBot->GetImageHandle().get();
+}
