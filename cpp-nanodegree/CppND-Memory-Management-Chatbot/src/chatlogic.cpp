@@ -15,13 +15,14 @@
 ChatLogic::ChatLogic() {
   //// STUDENT CODE
   ////
+  std::cout << "ChatLogic Constructor" << std::endl;
 
   // create instance of chatbot
-  _chatBot = new ChatBot("../images/chatbot.png");
+  //   _chatBot = new ChatBot("../images/chatbot.png");
 
   // add pointer to chatlogic so that chatbot answers can be passed on to the
   // GUI
-  _chatBot->SetChatLogicHandle(this);
+  //   _chatBot->SetChatLogicHandle(this);
 
   ////
   //// EOF STUDENT CODE
@@ -30,9 +31,10 @@ ChatLogic::ChatLogic() {
 ChatLogic::~ChatLogic() {
   //// STUDENT CODE
   ////
+  std::cout << "ChatLogic Destructor" << std::endl;
 
   // delete chatbot instance
-  delete _chatBot;
+  // delete _chatBot;
 
   // // delete all nodes
   // for (auto it = std::begin(_nodes); it != std::end(_nodes); ++it)
@@ -60,7 +62,6 @@ void ChatLogic::AddAllTokensToElement(std::string tokenID, tokenlist& tokens,
         token, tokens.end(),
         [&tokenID](const std::pair<std::string, std::string>& pair) {
           return pair.first == tokenID;
-          ;
         });
     if (token != tokens.end()) {
       element.AddToken(token->second);  // add new keyword to edge
@@ -84,15 +85,16 @@ void ChatLogic::LoadAnswerGraphFromFile(std::string filename) {
       tokenlist tokens;
       while (lineStr.size() > 0) {
         // extract next token
-        int posTokenFront = lineStr.find("<");
-        int posTokenBack = lineStr.find(">");
-        if (posTokenFront < 0 || posTokenBack < 0)
+        auto posTokenFront = lineStr.find("<");
+        auto posTokenBack = lineStr.find(">");
+        if (posTokenFront == std::string::npos ||
+            posTokenBack == std::string::npos)
           break;  // quit loop if no complete token has been found
         std::string tokenStr =
-            lineStr.substr(posTokenFront + 1, posTokenBack - 1);
+            lineStr.substr(posTokenFront + 1, posTokenBack - posTokenFront - 1);
 
         // extract token type and info
-        int posTokenInfo = tokenStr.find(":");
+        auto posTokenInfo = tokenStr.find(":");
         if (posTokenInfo != std::string::npos) {
           std::string tokenType = tokenStr.substr(0, posTokenInfo);
           std::string tokenInfo =
@@ -179,19 +181,17 @@ void ChatLogic::LoadAnswerGraphFromFile(std::string filename) {
                   });
 
               // create new edge
-              GraphEdge* edge = new GraphEdge(id);
+              auto edge = std::make_unique<GraphEdge>(id);
               edge->SetChildNode(childNode->get());
               edge->SetParentNode(parentNode->get());
-              _edges.push_back(std::unique_ptr<GraphEdge>(edge));
+              //   _edges.push_back(std::unique_ptr<GraphEdge>(edge));
 
               // find all keywords for current node
               AddAllTokensToElement("KEYWORD", tokens, *edge);
 
               // store reference in child node and parent node
-              (*childNode)->AddEdgeToParentNode(edge);
-              (*parentNode)
-                  ->AddEdgeToChildNode(
-                      std::move(std::unique_ptr<GraphEdge>(edge)));
+              (*childNode)->AddEdgeToParentNode(edge.get());
+              (*parentNode)->AddEdgeToChildNode(std::move(edge));
             }
 
             ////
@@ -228,9 +228,11 @@ void ChatLogic::LoadAnswerGraphFromFile(std::string filename) {
   }
 
   // add chatbot to graph root node
-  _chatBot->SetRootNode(rootNode);
-  rootNode->MoveChatbotHere(_chatBot);
-
+  ChatBot chatBot("../images/chatbot.png");
+  chatBot.SetChatLogicHandle(this);
+  chatBot.SetRootNode(rootNode);
+  rootNode->MoveChatbotHere(std::move(chatBot));
+  _chatBot = rootNode->GetChatbotHandle();
   ////
   //// EOF STUDENT CODE
 }

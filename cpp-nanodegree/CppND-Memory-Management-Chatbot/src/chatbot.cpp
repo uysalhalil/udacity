@@ -83,40 +83,38 @@ ChatBot& ChatBot::operator=(const ChatBot& source) {
 }
 
 // move constructor
-ChatBot::ChatBot(ChatBot&& source) {
+ChatBot::ChatBot(ChatBot&& source) noexcept {
   std::cout << "ChatBot Move Constructor" << std::endl;
   // move data members from source class
   _image = source._image;
+  source._image = nullptr;
   _currentNode = source._currentNode;
   _rootNode = source._rootNode;
   _chatLogic = source._chatLogic;
   // invalidate source class data members
-  source._image = nullptr;
   source._currentNode = nullptr;
   source._rootNode = nullptr;
   source._chatLogic = nullptr;
 }
 
 // move assignment operator
-ChatBot& ChatBot::operator=(ChatBot&& source) {
+ChatBot& ChatBot::operator=(ChatBot&& source) noexcept {
   std::cout << "ChatBot Move Assignment Operator" << std::endl;
-  if (this == &source) {
-    return *this;
-  }
-  // deallocate existing resource
-  if (_image != nullptr) {
+  if (this != &source) {
+    // delete existing resource before taking ownership
     delete _image;
+
+    // move data members from source class
+    _image = source._image;
+    source._image = nullptr;  // prevent double-delete
+    _currentNode = source._currentNode;
+    _rootNode = source._rootNode;
+    _chatLogic = source._chatLogic;
+    // invalidate source class data members
+    source._currentNode = nullptr;
+    source._rootNode = nullptr;
+    source._chatLogic = nullptr;
   }
-  // move data members from source class
-  _image = source._image;
-  _currentNode = source._currentNode;
-  _rootNode = source._rootNode;
-  _chatLogic = source._chatLogic;
-  // invalidate source class data members
-  source._image = nullptr;
-  source._currentNode = nullptr;
-  source._rootNode = nullptr;
-  source._chatLogic = nullptr;
   return *this;
 }
 
@@ -165,6 +163,8 @@ void ChatBot::SetCurrentNode(GraphNode* node) {
   std::mt19937 generator(int(std::time(0)));
   std::uniform_int_distribution<int> dis(0, answers.size() - 1);
   std::string answer = answers.at(dis(generator));
+
+  _chatLogic->SetChatbotHandle(this);
 
   // send selected node answer to user
   _chatLogic->SendMessageToUser(answer);
